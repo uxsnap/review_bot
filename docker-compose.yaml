@@ -1,0 +1,13 @@
+services:
+  deeppavlov:
+    env_file: [.env]
+    build:
+      dockerfile: deeppavlov.Dockerfile
+    ports:
+      - ${PORT}:${PORT}
+    volumes:
+      - ~/.deeppavlov:/root/.deeppavlov
+      - ~/.cache:/root/.cache
+    args:
+      PORT: ${PORT}
+      DP_CONFIG_NAME: ${DP_CONFIG_NAME}
