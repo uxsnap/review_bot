@@ -6,6 +6,7 @@ import (
 
 type Question struct {
 	gorm.Model
+	CategoryID uint   `gorm:"not null"`           // Внешний ключ на категорию
 	Text       string `gorm:"type:text;not null"` // Текст вопроса
 	AnswerJSON string `gorm:"type:json;not null"` // JSON с правильным ответом
 

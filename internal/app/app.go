@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/uxsnap/review_bot/internal/migrator"
 	tele "gopkg.in/telebot.v4"
 )
 
@@ -33,11 +34,15 @@ func New() (*App, error) {
 }
 
 func (a *App) Run(ctx context.Context) {
+	a.serviceProvider.SqliteClient(ctx)
+
+	a.RunMigrations(ctx)
 	a.RunBotServer(ctx)
 }
 
 func (a *App) RunBotServer(ctx context.Context) {
 	go func() {
+
 		a.Bot.Start()
 
 		log.Println("\n === Bot has started working. === ")
@@ -52,4 +57,10 @@ func (a *App) RunBotServer(ctx context.Context) {
 
 		log.Println("\n === Bot has shut down. === ")
 	}()
+}
+
+func (a *App) RunMigrations(ctx context.Context) {
+	migrator.Migrate(
+		a.serviceProvider.dbClient,
+	)
 }

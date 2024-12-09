@@ -6,6 +6,7 @@ import (
 
 type Test struct {
 	gorm.Model
+	UserID    uint   `gorm:"not null"`           // Внешний ключ на пользователя
 	Questions string `gorm:"type:json;not null"` // JSON с массивом ID вопросов
 	Score     int    `gorm:"default:0"`          // Счет (правильные ответы)
 

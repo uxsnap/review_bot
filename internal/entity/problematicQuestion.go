@@ -6,7 +6,9 @@ import (
 
 type ProblematicQuestion struct {
 	gorm.Model
-	WrongAnswersCount int `gorm:"default:0"` // Количество неправильных попыток
+	UserID            uint `gorm:"not null"`  // Внешний ключ на пользователя
+	QuestionID        uint `gorm:"not null"`  // Внешний ключ на вопрос
+	WrongAnswersCount int  `gorm:"default:0"` // Количество неправильных попыток
 
 	User     User     `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`     // Связь с пользователем
 	Question Question `gorm:"foreignKey:QuestionID;constraint:OnDelete:CASCADE"` // Связь с вопросом
