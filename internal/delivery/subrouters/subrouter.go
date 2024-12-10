@@ -1,5 +1,6 @@
 package subrouters
 
 type SubrouterDeps struct {
-	UsersService UsersService
+	UsersService      UsersService
+	CategoriesService CategoriesService
 }

@@ -2,19 +2,23 @@ package delivery
 
 import (
 	"github.com/uxsnap/review_bot/internal/delivery/subrouters"
+	categoriesSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/categories"
 	usersSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/users"
 	"gopkg.in/telebot.v4"
 )
 
 func New(
 	usersService subrouters.UsersService,
+	categoriesService subrouters.CategoriesService,
 ) map[string]telebot.HandlerFunc {
 	deps := subrouters.SubrouterDeps{
-		UsersService: usersService,
+		UsersService:      usersService,
+		CategoriesService: categoriesService,
 	}
 
 	handlers := map[string]map[string]telebot.HandlerFunc{
-		"/users": usersSubrouter.New(deps),
+		"/users":      usersSubrouter.New(deps),
+		"/categories": categoriesSubrouter.New(deps),
 	}
 
 	return prepareHandlers(handlers)

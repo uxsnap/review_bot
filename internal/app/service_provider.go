@@ -8,7 +8,9 @@ import (
 	db "github.com/uxsnap/review_bot/internal/client/database"
 	"github.com/uxsnap/review_bot/internal/client/database/sqlite"
 	"github.com/uxsnap/review_bot/internal/delivery"
+	repositoryCategories "github.com/uxsnap/review_bot/internal/repository/categories"
 	repositoryUsers "github.com/uxsnap/review_bot/internal/repository/users"
+	ucCategories "github.com/uxsnap/review_bot/internal/usecase/categories"
 	ucUsers "github.com/uxsnap/review_bot/internal/usecase/users"
 	"gopkg.in/telebot.v4"
 )
@@ -17,8 +19,11 @@ type serviceProvider struct {
 	dbClient db.DbClient
 	handlers map[string]telebot.HandlerFunc
 
-	usersRepository *repositoryUsers.UsersRepository
-	ucUsers         *ucUsers.UseCaseUsers
+	usersRepository      *repositoryUsers.UsersRepository
+	categoriesRepository *repositoryCategories.CategoriesRepository
+
+	ucUsers      *ucUsers.UseCaseUsers
+	ucCategories *ucCategories.UseCaseCategories
 }
 
 func newServiceProvider() *serviceProvider {
@@ -50,6 +55,20 @@ func (sp *serviceProvider) UsersService(ctx context.Context) *ucUsers.UseCaseUse
 	return sp.ucUsers
 }
 
+func (sp *serviceProvider) CategoriesRepository(ctx context.Context) *repositoryCategories.CategoriesRepository {
+	if sp.categoriesRepository == nil {
+		sp.categoriesRepository = repositoryCategories.New(sp.SqliteClient(ctx))
+	}
+	return sp.categoriesRepository
+}
+
+func (sp *serviceProvider) CategoriesService(ctx context.Context) *ucCategories.UseCaseCategories {
+	if sp.ucCategories == nil {
+		sp.ucCategories = ucCategories.New(sp.CategoriesRepository(ctx))
+	}
+	return sp.ucCategories
+}
+
 func (sp *serviceProvider) Handlers(ctx context.Context) map[string]telebot.HandlerFunc {
 	if len(sp.handlers) != 0 {
 		return sp.handlers
@@ -57,6 +76,7 @@ func (sp *serviceProvider) Handlers(ctx context.Context) map[string]telebot.Hand
 
 	sp.handlers = delivery.New(
 		sp.UsersService(ctx),
+		sp.CategoriesService(ctx),
 	)
 
 	// sp.handlers = map[string]telebot.HandlerFunc{
