@@ -36,27 +36,20 @@ func New() (*App, error) {
 func (a *App) Run(ctx context.Context) {
 	a.serviceProvider.SqliteClient(ctx)
 
-	a.RunMigrations(ctx)
 	a.RunBotServer(ctx)
+	a.RunMigrations(ctx)
 }
 
 func (a *App) RunBotServer(ctx context.Context) {
-	go func() {
+	handlers := a.serviceProvider.Handlers(ctx)
 
-		a.Bot.Start()
+	for endpoint, handler := range handlers {
+		a.Bot.Handle(endpoint, handler)
+	}
 
-		log.Println("\n === Bot has started working. === ")
-	}()
+	log.Println("\n === Bot has started working. === ")
 
-	go func() {
-		<-ctx.Done()
-
-		log.Println("\n === Bot is shutting down. === ")
-
-		a.Bot.Stop()
-
-		log.Println("\n === Bot has shut down. === ")
-	}()
+	a.Bot.Start()
 }
 
 func (a *App) RunMigrations(ctx context.Context) {
