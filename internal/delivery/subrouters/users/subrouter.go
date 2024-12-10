@@ -1,6 +1,8 @@
 package usersSubrouter
 
 import (
+	"fmt"
+
 	"github.com/uxsnap/review_bot/internal/delivery/subrouters"
 	"gopkg.in/telebot.v4"
 )
@@ -13,8 +15,14 @@ func New(deps subrouters.SubrouterDeps) map[string]telebot.HandlerFunc {
 	// us := UsersSubrouter{deps}
 
 	return map[string]telebot.HandlerFunc{
-		"/": func(ctx telebot.Context) error {
-			return ctx.Send("Hello!")
+		"/": func(c telebot.Context) error {
+			err := c.Send("USers!")
+
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			return nil
 		},
 	}
 }

@@ -34,14 +34,18 @@ func New() (*App, error) {
 }
 
 func (a *App) Run(ctx context.Context) {
-	a.serviceProvider.SqliteClient(ctx)
-
 	a.RunBotServer(ctx)
 	a.RunMigrations(ctx)
 }
 
 func (a *App) RunBotServer(ctx context.Context) {
 	handlers := a.serviceProvider.Handlers(ctx)
+
+	a.Bot.SetCommands([]tele.Command{
+		{Text: "/users", Description: "get users"},
+	})
+
+	// fmt.Println(handlers)
 
 	for endpoint, handler := range handlers {
 		a.Bot.Handle(endpoint, handler)
@@ -50,6 +54,13 @@ func (a *App) RunBotServer(ctx context.Context) {
 	log.Println("\n === Bot has started working. === ")
 
 	a.Bot.Start()
+
+	go func() {
+		<-ctx.Done()
+
+		a.Bot.Stop()
+		log.Println("\n === Bot has stopped working. === ")
+	}()
 }
 
 func (a *App) RunMigrations(ctx context.Context) {
