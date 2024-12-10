@@ -18,7 +18,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	mainCtx := context.Background()
+
+	ctx, cancel := signal.NotifyContext(mainCtx, os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
 	a, err := app.New()

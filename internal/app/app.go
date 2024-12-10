@@ -2,12 +2,16 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/uxsnap/review_bot/internal/migrator"
 	tele "gopkg.in/telebot.v4"
+	"gopkg.in/telebot.v4/middleware"
 )
 
 type App struct {
@@ -40,27 +44,44 @@ func (a *App) Run(ctx context.Context) {
 
 func (a *App) RunBotServer(ctx context.Context) {
 	handlers := a.serviceProvider.Handlers(ctx)
+	commands := make([]tele.Command, len(handlers))
 
-	a.Bot.SetCommands([]tele.Command{
-		{Text: "/users", Description: "get users"},
-	})
+	ids := strings.Split(os.Getenv("WHITELIST_IDS"), " ")
 
-	// fmt.Println(handlers)
+	whiteListIds := make([]int64, len(ids))
+
+	for ind, id := range ids {
+		conv, err := strconv.Atoi(id)
+
+		if err != nil {
+			log.Println("Whitelist error", err)
+			return
+		}
+
+		whiteListIds[ind] = int64(conv)
+	}
+
+	fmt.Println(whiteListIds)
+
+	a.Bot.Use(middleware.Logger())
+	a.Bot.Use(middleware.AutoRespond())
+	a.Bot.Use(middleware.Whitelist(whiteListIds...))
 
 	for endpoint, handler := range handlers {
 		a.Bot.Handle(endpoint, handler)
+		commands = append(commands, tele.Command{Text: endpoint, Description: endpoint})
 	}
+
+	a.Bot.SetCommands(commands)
 
 	log.Println("\n === Bot has started working. === ")
 
-	a.Bot.Start()
+	go a.Bot.Start()
 
-	go func() {
-		<-ctx.Done()
+	<-ctx.Done()
 
-		a.Bot.Stop()
-		log.Println("\n === Bot has stopped working. === ")
-	}()
+	log.Println("\n === Bot has stopped working. === ")
+	a.Bot.Stop()
 }
 
 func (a *App) RunMigrations(ctx context.Context) {
