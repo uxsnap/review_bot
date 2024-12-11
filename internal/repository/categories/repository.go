@@ -19,12 +19,12 @@ func New(client db.DbClient) *CategoriesRepository {
 	}
 }
 
-func (cr *CategoriesRepository) Get(ctx context.Context, name string) ([]entity.Category, error) {
+func (cr *CategoriesRepository) Get(ctx context.Context, userID int64, name string) ([]entity.Category, error) {
 	log.Printf("CategoriesRepository.Get, name: %v", name)
 
 	var categories []entity.Category
 
-	query := cr.DB()
+	query := cr.DB().Where("user_id = ?", userID)
 
 	if name != "" {
 		query = query.Where("name LIKE ?", []string{name})
@@ -39,17 +39,18 @@ func (cr *CategoriesRepository) Get(ctx context.Context, name string) ([]entity.
 	return categories, nil
 }
 
-func (cr *CategoriesRepository) Add(ctx context.Context, name string, desc string) error {
+func (cr *CategoriesRepository) Add(ctx context.Context, userID int64, name string, desc string) error {
 	log.Printf("CategoriesRepository.Add, name: %v, desc: %v", name, desc)
 
 	return cr.DB().Create(&entity.Category{
 		Name:        name,
 		Description: desc,
+		UserID:      uint(userID),
 	}).Error
 }
 
-func (cr *CategoriesRepository) Del(ctx context.Context, name string) error {
+func (cr *CategoriesRepository) Del(ctx context.Context, userID int64, name string) error {
 	log.Printf("CategoriesRepository.Del, name: %v", name)
 
-	return cr.DB().Debug().Where("name = ?", name).Delete(&entity.Category{}).Error
+	return cr.DB().Debug().Where("name = ? and user_id = ?", name, userID).Delete(&entity.Category{}).Error
 }

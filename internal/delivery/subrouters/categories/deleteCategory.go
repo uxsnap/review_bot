@@ -25,7 +25,7 @@ func (cs *CategoriesSubrouter) deleteCategory(tctx telebot.Context) error {
 
 	name := strings.ToUpper(args[0])
 
-	err := cs.CategoriesService.Del(ctx, name)
+	err := cs.CategoriesService.Del(ctx, tctx.Update().Message.Sender.ID, name)
 
 	if err != nil {
 		log.Printf("error: deleteCategory, %v", err)

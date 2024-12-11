@@ -21,7 +21,7 @@ func (cs *CategoriesSubrouter) getAllCategories(tctx telebot.Context) error {
 		name = args[0]
 	}
 
-	categories, err := cs.CategoriesService.Get(ctx, name)
+	categories, err := cs.CategoriesService.Get(ctx, tctx.Update().Message.Sender.ID, name)
 
 	if err != nil {
 		log.Printf("error: getAllCategories, %v", err)
@@ -37,6 +37,10 @@ func (cs *CategoriesSubrouter) getAllCategories(tctx telebot.Context) error {
 	}
 
 	log.Println("complete: getAllCategories")
+
+	if len(categories) == 0 {
+		return tctx.Send("Категорий пока нет...")
+	}
 
 	return tctx.Send(strings.Join(categoryRes, "\n"))
 }

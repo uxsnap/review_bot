@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/uxsnap/review_bot/internal/migrator"
 	tele "gopkg.in/telebot.v4"
 	"gopkg.in/telebot.v4/middleware"
 )
@@ -38,7 +37,6 @@ func New() (*App, error) {
 
 func (a *App) Run(ctx context.Context) {
 	a.RunBotServer(ctx)
-	a.RunMigrations(ctx)
 }
 
 func (a *App) RunBotServer(ctx context.Context) {
@@ -79,10 +77,4 @@ func (a *App) RunBotServer(ctx context.Context) {
 
 	log.Println("\n === Bot has stopped working. === ")
 	a.Bot.Stop()
-}
-
-func (a *App) RunMigrations(ctx context.Context) {
-	migrator.Migrate(
-		a.serviceProvider.dbClient,
-	)
 }

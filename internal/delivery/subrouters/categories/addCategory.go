@@ -26,7 +26,7 @@ func (cs *CategoriesSubrouter) addCategory(tctx telebot.Context) error {
 	name := strings.ToUpper(args[0])
 	desc := strings.Join(args[1:], " ")
 
-	err := cs.CategoriesService.Add(ctx, name, desc)
+	err := cs.CategoriesService.Add(ctx, tctx.Update().Message.Sender.ID, name, desc)
 
 	if err != nil {
 		log.Printf("error: addCategory, %v", err)

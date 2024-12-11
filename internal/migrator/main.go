@@ -7,8 +7,8 @@ import (
 
 func Migrate(dbClient db.DbClient) error {
 	var migrationEntity = []interface{}{
-		&entity.User{},
 		&entity.Category{},
+		&entity.User{},
 		&entity.ProblematicQuestion{},
 		&entity.Question{},
 		&entity.Statistic{},
@@ -17,6 +17,7 @@ func Migrate(dbClient db.DbClient) error {
 	}
 
 	err := dbClient.DB().AutoMigrate(migrationEntity...)
+
 	if err != nil {
 		return err
 	}

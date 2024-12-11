@@ -8,6 +8,7 @@ import (
 	db "github.com/uxsnap/review_bot/internal/client/database"
 	"github.com/uxsnap/review_bot/internal/client/database/sqlite"
 	"github.com/uxsnap/review_bot/internal/delivery"
+	"github.com/uxsnap/review_bot/internal/migrator"
 	repositoryCategories "github.com/uxsnap/review_bot/internal/repository/categories"
 	repositoryUsers "github.com/uxsnap/review_bot/internal/repository/users"
 	ucCategories "github.com/uxsnap/review_bot/internal/usecase/categories"
@@ -36,6 +37,11 @@ func (sp *serviceProvider) SqliteClient(ctx context.Context) db.DbClient {
 		if err != nil {
 			log.Fatalf("failed to connect to postgres: %v", err)
 		}
+
+		migrator.Migrate(
+			client,
+		)
+
 		sp.dbClient = client
 	}
 	return sp.dbClient
