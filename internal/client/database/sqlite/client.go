@@ -2,9 +2,13 @@ package sqlite
 
 import (
 	"context"
+	"log"
+	"os"
+	"time"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type DbClient struct {
@@ -12,7 +16,17 @@ type DbClient struct {
 }
 
 func NewClient(ctx context.Context, dbName string) (*DbClient, error) {
-	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{Logger: logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+
+		logger.Config{
+			SlowThreshold:             time.Second, // Slow SQL threshold
+			LogLevel:                  logger.Info, // Log level
+			IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+			ParameterizedQueries:      true,        // Don't include params in the SQL log
+			Colorful:                  true,
+		},
+	)})
 
 	if err != nil {
 		panic("failed to connect database")

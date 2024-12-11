@@ -11,4 +11,6 @@ type UsersService interface {
 
 type CategoriesService interface {
 	Get(ctx context.Context, name string) ([]entity.Category, error)
+	Add(ctx context.Context, name string, desc string) error
+	Del(ctx context.Context, name string) error
 }

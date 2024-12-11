@@ -79,11 +79,5 @@ func (sp *serviceProvider) Handlers(ctx context.Context) map[string]telebot.Hand
 		sp.CategoriesService(ctx),
 	)
 
-	// sp.handlers = map[string]telebot.HandlerFunc{
-	// 	"/c": func(c telebot.Context) error {
-	// 		return c.Send("Hello!")
-	// 	},
-	// }
-
 	return sp.handlers
 }

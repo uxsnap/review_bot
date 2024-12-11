@@ -17,8 +17,8 @@ func New(
 	}
 
 	handlers := map[string]map[string]telebot.HandlerFunc{
-		"/users":      usersSubrouter.New(deps),
-		"/categories": categoriesSubrouter.New(deps),
+		"users":      usersSubrouter.New(deps),
+		"categories": categoriesSubrouter.New(deps),
 	}
 
 	return prepareHandlers(handlers)
@@ -28,12 +28,14 @@ func prepareHandlers(handlers map[string]map[string]telebot.HandlerFunc) map[str
 	res := map[string]telebot.HandlerFunc{}
 
 	for mainEndpoint, handlerMap := range handlers {
-		for curEndpoint, handler := range handlerMap {
-			if curEndpoint == "/" {
-				curEndpoint = ""
+		for handlerEndpoint, handler := range handlerMap {
+			curEndpoint := handlerEndpoint
+
+			if curEndpoint != "" {
+				curEndpoint = "_" + curEndpoint
 			}
 
-			res[mainEndpoint+curEndpoint] = handler
+			res["/"+mainEndpoint+curEndpoint] = handler
 		}
 	}
 

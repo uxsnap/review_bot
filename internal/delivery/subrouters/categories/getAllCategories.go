@@ -2,13 +2,15 @@ package categoriesSubrouter
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 
 	"gopkg.in/telebot.v4"
 )
 
 func (cs *CategoriesSubrouter) getAllCategories(tctx telebot.Context) error {
-	log.Println("getAllCategories")
+	log.Println("call: getAllCategories")
 
 	ctx := context.Background()
 
@@ -28,11 +30,13 @@ func (cs *CategoriesSubrouter) getAllCategories(tctx telebot.Context) error {
 
 	categoryRes := make([]string, len(categories))
 
-	for _, c := range categories {
-		categoryRes = append(categoryRes, "Название: %v,\nОписание: %v", c.Name, c.Description)
+	for ind, c := range categories {
+		categoryRes = append(categoryRes, fmt.Sprintf(
+			"\n%v. Название: %v,\nОписание: %v", ind, c.Name, c.Description,
+		))
 	}
 
 	log.Println("complete: getAllCategories")
 
-	return tctx.Send(categoryRes)
+	return tctx.Send(strings.Join(categoryRes, "\n"))
 }

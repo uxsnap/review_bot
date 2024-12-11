@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -44,7 +43,7 @@ func (a *App) Run(ctx context.Context) {
 
 func (a *App) RunBotServer(ctx context.Context) {
 	handlers := a.serviceProvider.Handlers(ctx)
-	commands := make([]tele.Command, len(handlers))
+	commands := []tele.Command{}
 
 	ids := strings.Split(os.Getenv("WHITELIST_IDS"), " ")
 
@@ -60,8 +59,6 @@ func (a *App) RunBotServer(ctx context.Context) {
 
 		whiteListIds[ind] = int64(conv)
 	}
-
-	fmt.Println(whiteListIds)
 
 	a.Bot.Use(middleware.Logger())
 	a.Bot.Use(middleware.AutoRespond())

@@ -13,6 +13,8 @@ func New(deps subrouters.SubrouterDeps) map[string]telebot.HandlerFunc {
 	router := CategoriesSubrouter{deps}
 
 	return map[string]telebot.HandlerFunc{
-		"/": router.getAllCategories,
+		"":       router.getAllCategories,
+		"add":    router.addCategory,
+		"delete": router.deleteCategory,
 	}
 }
