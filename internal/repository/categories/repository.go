@@ -19,12 +19,12 @@ func New(client db.DbClient) *CategoriesRepository {
 	}
 }
 
-func (cr *CategoriesRepository) Get(ctx context.Context, userID int64, name string) ([]entity.Category, error) {
+func (cr *CategoriesRepository) Get(ctx context.Context, userID int64, name string, limit int, offset int) ([]entity.Category, error) {
 	log.Printf("CategoriesRepository.Get, name: %v", name)
 
 	var categories []entity.Category
 
-	query := cr.DB().Where("user_id = ?", userID)
+	query := cr.DB().Where("user_id = ?", userID).Limit(limit).Offset(offset)
 
 	if name != "" {
 		query = query.Where("name LIKE ?", []string{name})

@@ -10,7 +10,11 @@ type UsersService interface {
 }
 
 type CategoriesService interface {
-	Get(ctx context.Context, userID int64, name string) ([]entity.Category, error)
+	Get(ctx context.Context, userID int64, name string, limit int, offset int) ([]entity.Category, error)
 	Add(ctx context.Context, userID int64, name string, desc string) error
 	Del(ctx context.Context, userID int64, name string) error
+}
+
+type QuestionsService interface {
+	Add(ctx context.Context, categoryID int64, text string, answer string) error
 }

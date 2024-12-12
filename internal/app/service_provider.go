@@ -10,21 +10,25 @@ import (
 	"github.com/uxsnap/review_bot/internal/delivery"
 	"github.com/uxsnap/review_bot/internal/migrator"
 	repositoryCategories "github.com/uxsnap/review_bot/internal/repository/categories"
+	repositoryQuestions "github.com/uxsnap/review_bot/internal/repository/questions"
 	repositoryUsers "github.com/uxsnap/review_bot/internal/repository/users"
 	ucCategories "github.com/uxsnap/review_bot/internal/usecase/categories"
+	ucQuestions "github.com/uxsnap/review_bot/internal/usecase/questions"
 	ucUsers "github.com/uxsnap/review_bot/internal/usecase/users"
 	"gopkg.in/telebot.v4"
 )
 
 type serviceProvider struct {
 	dbClient db.DbClient
-	handlers map[string]telebot.HandlerFunc
+	handlers map[interface{}]telebot.HandlerFunc
 
 	usersRepository      *repositoryUsers.UsersRepository
 	categoriesRepository *repositoryCategories.CategoriesRepository
+	questionsRepository  *repositoryQuestions.QuestionsRepository
 
 	ucUsers      *ucUsers.UseCaseUsers
 	ucCategories *ucCategories.UseCaseCategories
+	ucQuestions  *ucQuestions.UseCaseQuestions
 }
 
 func newServiceProvider() *serviceProvider {
@@ -75,7 +79,21 @@ func (sp *serviceProvider) CategoriesService(ctx context.Context) *ucCategories.
 	return sp.ucCategories
 }
 
-func (sp *serviceProvider) Handlers(ctx context.Context) map[string]telebot.HandlerFunc {
+func (sp *serviceProvider) QuestionsRepository(ctx context.Context) *repositoryQuestions.QuestionsRepository {
+	if sp.categoriesRepository == nil {
+		sp.questionsRepository = repositoryQuestions.New(sp.SqliteClient(ctx))
+	}
+	return sp.questionsRepository
+}
+
+func (sp *serviceProvider) QuestionsService(ctx context.Context) *ucQuestions.UseCaseQuestions {
+	if sp.ucQuestions == nil {
+		sp.ucQuestions = ucQuestions.New(sp.QuestionsRepository(ctx))
+	}
+	return sp.ucQuestions
+}
+
+func (sp *serviceProvider) Handlers(ctx context.Context) map[interface{}]telebot.HandlerFunc {
 	if len(sp.handlers) != 0 {
 		return sp.handlers
 	}
@@ -83,6 +101,7 @@ func (sp *serviceProvider) Handlers(ctx context.Context) map[string]telebot.Hand
 	sp.handlers = delivery.New(
 		sp.UsersService(ctx),
 		sp.CategoriesService(ctx),
+		sp.QuestionsService(ctx),
 	)
 
 	return sp.handlers

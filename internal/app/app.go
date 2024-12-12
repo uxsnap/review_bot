@@ -36,10 +36,11 @@ func New() (*App, error) {
 }
 
 func (a *App) Run(ctx context.Context) {
+	a.PrepareBot(ctx)
 	a.RunBotServer(ctx)
 }
 
-func (a *App) RunBotServer(ctx context.Context) {
+func (a *App) PrepareBot(ctx context.Context) {
 	handlers := a.serviceProvider.Handlers(ctx)
 	commands := []tele.Command{}
 
@@ -64,11 +65,17 @@ func (a *App) RunBotServer(ctx context.Context) {
 
 	for endpoint, handler := range handlers {
 		a.Bot.Handle(endpoint, handler)
-		commands = append(commands, tele.Command{Text: endpoint, Description: endpoint})
+
+		switch v := endpoint.(type) {
+		case string:
+			commands = append(commands, tele.Command{Text: v, Description: v})
+		}
 	}
 
 	a.Bot.SetCommands(commands)
+}
 
+func (a *App) RunBotServer(ctx context.Context) {
 	log.Println("\n === Bot has started working. === ")
 
 	go a.Bot.Start()

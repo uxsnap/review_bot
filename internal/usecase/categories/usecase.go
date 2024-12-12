@@ -19,10 +19,10 @@ func New(
 	}
 }
 
-func (uc *UseCaseCategories) Get(ctx context.Context, userID int64, name string) ([]entity.Category, error) {
+func (uc *UseCaseCategories) Get(ctx context.Context, userID int64, name string, limit int, offset int) ([]entity.Category, error) {
 	log.Printf("UseCaseCategories.Get, name: %v", name)
 
-	return uc.categoriesRepository.Get(ctx, userID, name)
+	return uc.categoriesRepository.Get(ctx, userID, name, limit, offset)
 }
 
 func (uc *UseCaseCategories) Add(ctx context.Context, userID int64, name string, desc string) error {

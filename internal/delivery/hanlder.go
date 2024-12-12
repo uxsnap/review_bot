@@ -2,7 +2,9 @@ package delivery
 
 import (
 	"github.com/uxsnap/review_bot/internal/delivery/subrouters"
+	callbackSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/callback"
 	categoriesSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/categories"
+	questionsSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/questions"
 	usersSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/users"
 	"gopkg.in/telebot.v4"
 )
@@ -10,21 +12,38 @@ import (
 func New(
 	usersService subrouters.UsersService,
 	categoriesService subrouters.CategoriesService,
-) map[string]telebot.HandlerFunc {
+	questionsService subrouters.QuestionsService,
+) map[interface{}]telebot.HandlerFunc {
 	deps := subrouters.SubrouterDeps{
 		UsersService:      usersService,
 		CategoriesService: categoriesService,
+		QuestionsService:  questionsService,
 	}
 
-	handlers := map[string]map[string]telebot.HandlerFunc{
+	mainHandlers := prepareHandlers(map[interface{}]map[string]telebot.HandlerFunc{
 		"users":      usersSubrouter.New(deps),
 		"categories": categoriesSubrouter.New(deps),
+		"questions":  questionsSubrouter.New(deps),
+	})
+
+	respondHandlers := map[interface{}]telebot.HandlerFunc{
+		telebot.OnCallback: callbackSubrouter.Handle(deps),
 	}
 
-	return prepareHandlers(handlers)
+	handlers := map[interface{}]telebot.HandlerFunc{}
+
+	for k, v := range mainHandlers {
+		handlers[k] = v
+	}
+
+	for k, v := range respondHandlers {
+		handlers[k] = v
+	}
+
+	return handlers
 }
 
-func prepareHandlers(handlers map[string]map[string]telebot.HandlerFunc) map[string]telebot.HandlerFunc {
+func prepareHandlers(handlers map[interface{}]map[string]telebot.HandlerFunc) map[string]telebot.HandlerFunc {
 	res := map[string]telebot.HandlerFunc{}
 
 	for mainEndpoint, handlerMap := range handlers {
@@ -35,7 +54,7 @@ func prepareHandlers(handlers map[string]map[string]telebot.HandlerFunc) map[str
 				curEndpoint = "_" + curEndpoint
 			}
 
-			res["/"+mainEndpoint+curEndpoint] = handler
+			res["/"+mainEndpoint.(string)+curEndpoint] = handler
 		}
 	}
 
