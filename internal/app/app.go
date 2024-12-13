@@ -64,6 +64,7 @@ func (a *App) PrepareBot(ctx context.Context) {
 	a.Bot.Use(middleware.Whitelist(whiteListIds...))
 
 	for endpoint, handler := range handlers {
+
 		a.Bot.Handle(endpoint, handler)
 
 		switch v := endpoint.(type) {

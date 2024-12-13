@@ -26,7 +26,7 @@ func (cs *QuestionsSubrouter) addQuestion(tctx telebot.Context) error {
 	for _, c := range categories {
 		conv := strconv.Itoa(int(c.ID))
 
-		categoryRows = append(categoryRows, selector.Row(selector.Data(c.Name, conv, "addQuestion")))
+		categoryRows = append(categoryRows, selector.Row(selector.Data(c.Name, "addQuestion", conv)))
 	}
 
 	categoryRows = append(categoryRows, selector.Row(

@@ -15,7 +15,7 @@ func New(deps subrouters.SubrouterDeps) map[string]telebot.HandlerFunc {
 	// us := UsersSubrouter{deps}
 
 	return map[string]telebot.HandlerFunc{
-		"/": func(c telebot.Context) error {
+		"": func(c telebot.Context) error {
 			err := c.Send("USers!")
 
 			if err != nil {

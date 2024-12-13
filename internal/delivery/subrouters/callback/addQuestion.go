@@ -15,7 +15,7 @@ func (cs *CallbackSubrouter) getQuestionCategories(tctx telebot.Context) error {
 	categories, err := cs.CategoriesService.Get(ctx, tctx.Update().Message.Sender.ID, "", 1, 1)
 
 	if err != nil {
-		log.Printf("error: addQuestion, %v", err)
+		log.Printf("error: addQuestion addQuestion callback, %v", err)
 		return tctx.Send("Не удалось получить категории :С")
 	}
 
@@ -25,7 +25,7 @@ func (cs *CallbackSubrouter) getQuestionCategories(tctx telebot.Context) error {
 	for _, c := range categories {
 		conv := strconv.Itoa(int(c.ID))
 
-		categoryRows = append(categoryRows, selector.Row(selector.Data(c.Name, conv, "addQuestion")))
+		categoryRows = append(categoryRows, selector.Row(selector.Data(c.Name, "addQuestion", conv)))
 	}
 
 	categoryRows = append(categoryRows, selector.Row(
@@ -38,14 +38,31 @@ func (cs *CallbackSubrouter) getQuestionCategories(tctx telebot.Context) error {
 	return tctx.Edit("Выберите категорию вопроса: ", selector)
 }
 
+func (cs *CallbackSubrouter) addTextQuestion(tctx telebot.Context) error {
+	return tctx.Edit("Выберите категорию вопроса: ")
+}
+
 func (cs *CallbackSubrouter) addQuestion(tctx telebot.Context) error {
-	log.Println("called: addQuestion")
+	log.Println("called: addQuestion callback")
 
 	data := strings.Split(tctx.Data(), "|")[1:] // remove addQuestion
+	query := data[0]
 
-	if data[0] == "button_next" || data[0] == "button_prev" {
+	if query == "button_next" || query == "button_prev" {
 		return cs.getQuestionCategories(tctx)
 	}
 
-	return tctx.Send("Ну выбрал ты блин")
+	if query == "questionType" {
+		return cs.addTextQuestion(tctx)
+	}
+
+	selector := &telebot.ReplyMarkup{}
+
+	selector.Inline(
+		selector.Row(
+			selector.Data("Вопрос", "addQuestion", "questionType"),
+		),
+	)
+
+	return tctx.Edit("Выбери тип вопроса", selector)
 }
