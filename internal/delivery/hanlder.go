@@ -2,19 +2,21 @@ package delivery
 
 import (
 	"github.com/uxsnap/review_bot/internal/delivery/subrouters"
-	callbackSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/callback"
 	categoriesSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/categories"
+	messageHandlersSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/messageHandlers"
 	questionsSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/questions"
 	usersSubrouter "github.com/uxsnap/review_bot/internal/delivery/subrouters/users"
 	"gopkg.in/telebot.v4"
 )
 
 func New(
+	kvClient subrouters.KvClient,
 	usersService subrouters.UsersService,
 	categoriesService subrouters.CategoriesService,
 	questionsService subrouters.QuestionsService,
 ) map[interface{}]telebot.HandlerFunc {
 	deps := subrouters.SubrouterDeps{
+		KvClient:          kvClient,
 		UsersService:      usersService,
 		CategoriesService: categoriesService,
 		QuestionsService:  questionsService,
@@ -26,8 +28,9 @@ func New(
 		"questions":  questionsSubrouter.New(deps),
 	})
 
-	respondHandlers := map[interface{}]telebot.HandlerFunc{
-		telebot.OnCallback: callbackSubrouter.Handle(deps),
+	messageHandlers := map[interface{}]telebot.HandlerFunc{
+		telebot.OnCallback: messageHandlersSubrouter.Handle(deps),
+		telebot.OnText:     messageHandlersSubrouter.Handle(deps),
 	}
 
 	handlers := map[interface{}]telebot.HandlerFunc{}
@@ -36,7 +39,7 @@ func New(
 		handlers[k] = v
 	}
 
-	for k, v := range respondHandlers {
+	for k, v := range messageHandlers {
 		handlers[k] = v
 	}
 

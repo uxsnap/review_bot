@@ -18,3 +18,9 @@ type CategoriesService interface {
 type QuestionsService interface {
 	Add(ctx context.Context, categoryID int64, text string, answer string) error
 }
+
+type KvClient interface {
+	Get(key string) (interface{}, bool)
+	Set(key string, val interface{})
+	Delete(key string)
+}

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	db "github.com/uxsnap/review_bot/internal/client/database"
+	kv "github.com/uxsnap/review_bot/internal/client/database/keyValue"
 	"github.com/uxsnap/review_bot/internal/client/database/sqlite"
 	"github.com/uxsnap/review_bot/internal/delivery"
 	"github.com/uxsnap/review_bot/internal/migrator"
@@ -20,6 +21,7 @@ import (
 
 type serviceProvider struct {
 	dbClient db.DbClient
+	kvClient db.KvClient
 	handlers map[interface{}]telebot.HandlerFunc
 
 	usersRepository      *repositoryUsers.UsersRepository
@@ -39,7 +41,7 @@ func (sp *serviceProvider) SqliteClient(ctx context.Context) db.DbClient {
 	if sp.dbClient == nil {
 		client, err := sqlite.NewClient(ctx, os.Getenv("SQLITE_DB_NAME"))
 		if err != nil {
-			log.Fatalf("failed to connect to postgres: %v", err)
+			log.Fatalf("failed to connect to sqlite: %v", err)
 		}
 
 		migrator.Migrate(
@@ -49,6 +51,18 @@ func (sp *serviceProvider) SqliteClient(ctx context.Context) db.DbClient {
 		sp.dbClient = client
 	}
 	return sp.dbClient
+}
+
+func (sp *serviceProvider) MapKvClient(ctx context.Context) db.KvClient {
+	if sp.kvClient == nil {
+		client, err := kv.NewKvClient(ctx)
+		if err != nil {
+			log.Fatalf("failed to connect to kv client: %v", err)
+		}
+
+		sp.kvClient = client
+	}
+	return sp.kvClient
 }
 
 func (sp *serviceProvider) UsersRepository(ctx context.Context) *repositoryUsers.UsersRepository {
@@ -99,6 +113,7 @@ func (sp *serviceProvider) Handlers(ctx context.Context) map[interface{}]telebot
 	}
 
 	sp.handlers = delivery.New(
+		sp.MapKvClient(ctx),
 		sp.UsersService(ctx),
 		sp.CategoriesService(ctx),
 		sp.QuestionsService(ctx),
