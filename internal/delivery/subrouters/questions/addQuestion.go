@@ -20,6 +20,11 @@ func (cs *QuestionsSubrouter) addQuestion(tctx telebot.Context) error {
 		return tctx.Send("Не удалось получить категории :С")
 	}
 
+	if len(categories) == 0 {
+		log.Printf("error: addQuestion, %v", err)
+		return tctx.Send("Нет категорий :С")
+	}
+
 	categoryRows := []telebot.Row{}
 	selector := &telebot.ReplyMarkup{}
 

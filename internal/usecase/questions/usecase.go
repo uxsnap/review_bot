@@ -18,7 +18,7 @@ func New(
 }
 
 func (uc *UseCaseQuestions) Add(ctx context.Context, categoryID int64, text string, answer string) error {
-	log.Printf("UseCaseQuestions.Add, category: %v, text: %v", categoryID, text)
+	log.Printf("UseCaseQuestions.Add, category: %v, text: %v, answer: %v", categoryID, text, answer)
 
 	return uc.questionsRepository.Add(ctx, categoryID, text, answer)
 }

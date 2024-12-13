@@ -2,6 +2,7 @@ package messageHandlersSubrouter
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"strconv"
 
@@ -77,29 +78,71 @@ func (cs *MessageHandlersSubrouter) addTextQuestion(tctx telebot.Context) error 
 		data:       tctx.Args(),
 	})
 
-	return tctx.Send("Введите вопрос: ")
+	return tctx.Edit("Введите вопрос: ")
 }
 
 func (cs *MessageHandlersSubrouter) handleTextQuestion(tctx telebot.Context) error {
 	log.Println("called: handleTextQuestion")
 
-	data := tctx.Args()
-	text := tctx.Text()
-
-	data = append(data, text)
-
 	sender := tctx.Sender()
+
+	data, ok := cs.KvClient.Get(strconv.Itoa(int(sender.ID)))
+
+	if !ok {
+		return tctx.Send("Не удалось получить данные :С")
+	}
+
+	text := tctx.Text()
+	userQI := data.(*UserQuestionInfo)
+
+	userQI.data = append(userQI.data, text)
 
 	cs.KvClient.Set(strconv.Itoa(int(sender.ID)), &UserQuestionInfo{
 		actionType: "handleTextAnswer",
-		data:       data,
+		data:       userQI.data,
 	})
 
 	return tctx.Send("Введите ответ на вопрос:")
 }
 
 func (cs *MessageHandlersSubrouter) handleTextAnswer(tctx telebot.Context) error {
-	log.Println("called: handleTextQuestion")
+	log.Println("called: handleTextAnswer")
+
+	ctx := context.Background()
+
+	sender := tctx.Sender()
+
+	kvData, ok := cs.KvClient.Get(strconv.Itoa(int(sender.ID)))
+
+	if !ok {
+		return tctx.Send("Не удалось получить данные :С")
+	}
+
+	text := tctx.Text()
+	userQI := kvData.(*UserQuestionInfo)
+
+	data := userQI.data[2:]
+
+	answerValues := map[string]string{
+		"type": "question",
+		"data": text,
+	}
+
+	jsonValue, err := json.Marshal(answerValues)
+	if err != nil {
+		return tctx.Send("Не удалось получить данные :С")
+	}
+
+	conv, err := strconv.Atoi(data[0])
+	if err != nil {
+		return tctx.Send("Не удалось получить данные :С")
+	}
+
+	err = cs.QuestionsService.Add(ctx, int64(conv), data[1], string(jsonValue))
+
+	if err != nil {
+		return tctx.Send("Не удалось успешно записать вопрос :С")
+	}
 
 	return tctx.Send("Вопрос успешно записан!")
 }

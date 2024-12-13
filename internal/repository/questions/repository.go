@@ -20,7 +20,7 @@ func New(client db.DbClient) *QuestionsRepository {
 }
 
 func (cr *QuestionsRepository) Add(ctx context.Context, categoryID int64, text string, answer string) error {
-	log.Printf("QuestionsRepository.Add, name: %v, desc: %v", categoryID, text)
+	log.Printf("QuestionsRepository.Add, сategory: %v, text: %v, answer: %v", categoryID, text, answer)
 
 	return cr.DB().Create(&entity.Question{
 		CategoryID: uint(categoryID),

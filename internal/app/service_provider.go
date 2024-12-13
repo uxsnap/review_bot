@@ -94,7 +94,7 @@ func (sp *serviceProvider) CategoriesService(ctx context.Context) *ucCategories.
 }
 
 func (sp *serviceProvider) QuestionsRepository(ctx context.Context) *repositoryQuestions.QuestionsRepository {
-	if sp.categoriesRepository == nil {
+	if sp.questionsRepository == nil {
 		sp.questionsRepository = repositoryQuestions.New(sp.SqliteClient(ctx))
 	}
 	return sp.questionsRepository
