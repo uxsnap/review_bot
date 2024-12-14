@@ -33,6 +33,18 @@ func (cs *CategoriesSubrouter) addCategory(tctx telebot.Context) error {
 		return tctx.Send("Не удалось добавить категорию :С")
 	}
 
+	count, err := cs.CategoriesService.Count(ctx, tctx.Update().Message.Sender.ID)
+
+	if err != nil {
+		log.Printf("error: addCategory, %v", err)
+		return tctx.Send("Не удалось добавить категорию :С")
+	}
+
+	cs.KvClient.Set(
+		fmt.Sprintf("%v_categories_count", tctx.Update().Message.Sender.ID),
+		count,
+	)
+
 	log.Println("complete: addCategory")
 
 	return tctx.Send(fmt.Sprintf("Добавлена новая категория: %v", name))

@@ -25,6 +25,12 @@ func (uc *UseCaseCategories) Get(ctx context.Context, userID int64, name string,
 	return uc.categoriesRepository.Get(ctx, userID, name, limit, offset)
 }
 
+func (uc *UseCaseCategories) Count(ctx context.Context, userID int64) (int, error) {
+	log.Printf("UseCaseCategories.Count, userID: %v", userID)
+
+	return uc.categoriesRepository.Count(ctx, userID)
+}
+
 func (uc *UseCaseCategories) Add(ctx context.Context, userID int64, name string, desc string) error {
 	log.Printf("UseCaseCategories.Add, name: %v, desc: %v", name, desc)
 

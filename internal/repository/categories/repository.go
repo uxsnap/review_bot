@@ -39,6 +39,15 @@ func (cr *CategoriesRepository) Get(ctx context.Context, userID int64, name stri
 	return categories, nil
 }
 
+func (cr *CategoriesRepository) Count(ctx context.Context, userID int64) (int, error) {
+	log.Printf("CategoriesRepository.Count, userID: %v", userID)
+
+	var count int64
+	err := cr.DB().Where("user_id = ?", userID).Count(&count).Error
+
+	return int(count), err
+}
+
 func (cr *CategoriesRepository) Add(ctx context.Context, userID int64, name string, desc string) error {
 	log.Printf("CategoriesRepository.Add, name: %v, desc: %v", name, desc)
 

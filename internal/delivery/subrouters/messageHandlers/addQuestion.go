@@ -3,9 +3,11 @@ package messageHandlersSubrouter
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"strconv"
 
+	"github.com/uxsnap/review_bot/internal/delivery/subrouters"
 	"gopkg.in/telebot.v4"
 )
 
@@ -42,7 +44,18 @@ func (cs *MessageHandlersSubrouter) addQuestion(tctx telebot.Context) error {
 func (cs *MessageHandlersSubrouter) getQuestionCategories(tctx telebot.Context) error {
 	ctx := context.Background()
 
-	categories, err := cs.CategoriesService.Get(ctx, tctx.Callback().Sender.ID, "", 1, 1)
+	data := tctx.Args()
+	curPage := data[2]
+	curPageInt, err := strconv.Atoi(curPage)
+
+	if err != nil {
+		log.Printf("error: addQuestion addQuestion callback, %v", err)
+		return tctx.Send("Не удалось получить категории :С")
+	}
+
+	categories, err := cs.CategoriesService.Get(
+		ctx, tctx.Callback().Sender.ID, "", subrouters.LIMIT_COUNT, curPageInt*subrouters.LIMIT_COUNT,
+	)
 
 	if err != nil {
 		log.Printf("error: addQuestion addQuestion callback, %v", err)
@@ -58,10 +71,29 @@ func (cs *MessageHandlersSubrouter) getQuestionCategories(tctx telebot.Context) 
 		categoryRows = append(categoryRows, selector.Row(selector.Data(c.Name, "addQuestion", conv)))
 	}
 
-	categoryRows = append(categoryRows, selector.Row(
-		selector.Data("⬅", "addQuestion", "prev", "1"),
-		selector.Data("➡", "addQuestion", "next", "3"),
-	))
+	buttonRows := []telebot.Btn{}
+
+	if curPageInt != 0 {
+		buttonRows = append(buttonRows,
+			selector.Data("⬅", "addQuestion", "button_prev", fmt.Sprintf("%v", curPageInt-1)),
+		)
+	}
+
+	categoriesCountObject, kvOk := cs.KvClient.Get(
+		fmt.Sprintf("%v_categories_count", tctx.Update().Message.Sender.ID),
+	)
+
+	categoriesCount, typeCaseOk := categoriesCountObject.(int)
+
+	if kvOk && typeCaseOk {
+		if categoriesCount > subrouters.LIMIT_COUNT*curPageInt {
+			buttonRows = append(
+				buttonRows, selector.Data("➡", "addQuestion", "button_next", fmt.Sprintf("%v", curPageInt+1)),
+			)
+		}
+	}
+
+	categoryRows = append(categoryRows, selector.Row(buttonRows...))
 
 	selector.Inline(categoryRows...)
 

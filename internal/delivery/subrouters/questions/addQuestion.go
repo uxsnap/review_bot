@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/uxsnap/review_bot/internal/delivery/subrouters"
 	"gopkg.in/telebot.v4"
 )
 
@@ -13,7 +14,7 @@ func (cs *QuestionsSubrouter) addQuestion(tctx telebot.Context) error {
 
 	ctx := context.Background()
 
-	categories, err := cs.CategoriesService.Get(ctx, tctx.Update().Message.Sender.ID, "", 1, 0)
+	categories, err := cs.CategoriesService.Get(ctx, tctx.Update().Message.Sender.ID, "", subrouters.LIMIT_COUNT, 0)
 
 	if err != nil {
 		log.Printf("error: addQuestion, %v", err)
@@ -35,8 +36,7 @@ func (cs *QuestionsSubrouter) addQuestion(tctx telebot.Context) error {
 	}
 
 	categoryRows = append(categoryRows, selector.Row(
-		selector.Data("⬅", "addQuestion", "button_prev", "1"),
-		selector.Data("➡", "addQuestion", "button_next", "2"),
+		selector.Data("➡", "addQuestion", "button_next", "1"),
 	))
 
 	selector.Inline(categoryRows...)
