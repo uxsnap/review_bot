@@ -3,7 +3,6 @@ package messageHandlersSubrouter
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"strconv"
 
@@ -71,28 +70,12 @@ func (cs *MessageHandlersSubrouter) getQuestionCategories(tctx telebot.Context) 
 		categoryRows = append(categoryRows, selector.Row(selector.Data(c.Name, "addQuestion", conv)))
 	}
 
-	buttonRows := []telebot.Btn{}
-
-	if curPageInt != 0 {
-		buttonRows = append(buttonRows,
-			selector.Data("⬅", "addQuestion", "button_prev", fmt.Sprintf("%v", curPageInt-1)),
-		)
-	}
-
-	categoriesCountObject, kvOk := cs.KvClient.Get(
-		fmt.Sprintf("%v_categories_count", tctx.Update().Message.Sender.ID),
-	)
-
-	categoriesCount, typeCaseOk := categoriesCountObject.(int)
-
-	if kvOk && typeCaseOk {
-		if categoriesCount > subrouters.LIMIT_COUNT*curPageInt {
-			buttonRows = append(
-				buttonRows, selector.Data("➡", "addQuestion", "button_next", fmt.Sprintf("%v", curPageInt+1)),
-			)
-		}
-	}
-
+	buttonRows := cs.Pagination(tctx, PaginationData{
+		endpoint:    "addQuestion",
+		selector:    selector,
+		curPageInt:  curPageInt,
+		maxSizeName: "categories_count",
+	})
 	categoryRows = append(categoryRows, selector.Row(buttonRows...))
 
 	selector.Inline(categoryRows...)
